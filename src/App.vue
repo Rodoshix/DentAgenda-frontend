@@ -2,9 +2,6 @@
 </script>
 
 <template>
-  <h1 class="text-3xl font-bold underline text-blue-600">
-    ¡Hola!
-  </h1>
     <div id="app">
     <router-view />
   </div>
