@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import api from '@/interceptors/axiosAuth'
 
 export default {
   data() {
@@ -78,22 +78,18 @@ export default {
     },
     async login() {
       try {
-        const response = await axios.post('http://localhost:8080/api/auth/login', {
+        const response = await api.post('/auth/login', {
           rut: this.rut.trim(),
           password: this.password.trim()
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
         })
 
-        const { token, rol } = response.data
-        localStorage.setItem('token', token)
+        const { access_token, refresh_token, rol } = response.data
+        localStorage.setItem('token', access_token)
+        localStorage.setItem('refresh_token', refresh_token)
         localStorage.setItem('rol', rol)
 
         this.error = ''
 
-        // Redirige automáticamente según el rol
         if (rol === 'PACIENTE') this.$router.push('/paciente')
         else if (rol === 'RECEPCIONISTA') this.$router.push('/recepcionista')
         else if (rol === 'ODONTOLOGO') this.$router.push('/odontologo')
@@ -101,7 +97,7 @@ export default {
 
       } catch (err) {
         console.error('Error login:', err.response?.data || err.message)
-        this.error = err.response?.data || 'Credenciales inválidas'
+        this.error = err.response?.data?.message || 'Contraseña incorrecta'
       }
     }
   }
@@ -129,24 +125,23 @@ export default {
 }
 .login-background {
   position: relative;
-  background: radial-gradient(circle at 30% 30%, #311d3f 0%, transparent 60%),
-              radial-gradient(circle at 70% 70%, #2f2a60 0%, transparent 70%),
-              radial-gradient(circle at 50% 90%, #602040 0%, transparent 65%);
-  background-color: #0a0f2c;
-  background-size: 180% 180%;
-  animation: auroraDark 30s ease-in-out infinite;
+  background: linear-gradient(to right, #4fc3f7, #0288d1); /* mismo efecto */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .login-box {
   max-width: 360px;
   margin: auto;
   padding: 2.5rem 2rem;
-  border-radius: 20px;
-  background: rgba(0, 72, 186, 0.1); /* azul translúcido */
-  box-shadow: 0 8px 32px 0 rgba(0, 72, 186, 0.37); /* sombra azul */
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.1); /* más claro que el fondo */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); /* sombra más marcada */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 72, 186, 0.3); /* borde azul suave */
+  border: 1.5px solid rgba(255, 255, 255, 0.25); /* borde claro sutil */
 }
 
 .login-button {
