@@ -1,111 +1,108 @@
 <template>
-  <section class="section is-flex is-justify-content-center is-align-items-center paciente-background">
-    <div class="box perfil-card">
-      <div class="has-text-centered mb-5">
-        <span class="icon is-large has-text-primary">
-          <i class="fas fa-user-circle fa-3x"></i>
-        </span>
-        <h1 class="title is-4 has-text-info mt-2">Perfil del Paciente</h1>
-      </div>
+  <section>
+    <!-- HEADER -->
+    <header class="has-background-info p-4">
+      <h1 class="title has-text-white">🦷 DentAgenda - Panel del Paciente</h1>
+    </header>
 
-      <div v-if="perfil" class="perfil-datos">
-        <p><strong> RUT :</strong> {{ perfil.rut }}</p>
-        <p><strong> Nombre :</strong> {{ perfil.nombre }}</p>
-        <p><strong> Correo :</strong> {{ perfil.correo }}</p>
-        <p><strong> Teléfono :</strong> {{ perfil.telefono }}</p>
-        <p><strong> Rol :</strong> {{ perfil.rol }}</p>
-      </div>
+    <div class="columns m-0" style="min-height: 90vh">
+      <!-- SIDEBAR -->
+      <aside class="column is-one-quarter p-4 has-background-white" style="border-right: 2px solid #00bcd4;">
+        <p class="mb-4 has-text-weight-semibold">Menú</p>
+        <button class="button is-info is-light is-fullwidth mb-2" @click="cambiarVista('agendar')">Agendar Cita</button>
+        <button class="button is-info is-light is-fullwidth mb-2" @click="cambiarVista('calendario')">Calendario Citas</button>
+        <button class="button is-info is-light is-fullwidth mb-2" @click="cambiarVista('historial')">Historial Citas</button>
+        <button class="button is-info is-light is-fullwidth mb-2" @click="cambiarVista('perfil')">Editar Perfil</button>
+      </aside>
 
-      <div class="has-text-centered mt-5">
-        <button class="button is-danger is-light" @click="logout">
-          <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión
-        </button>
-      </div>
+      <!-- CONTENIDO -->
+      <main class="column p-5" style="background: linear-gradient(to bottom, #e0f7fa, #ffffff); color: #333;">
+        <component
+          v-if="componenteActual && componenteKey"
+          :is="componenteActual"
+          :key="componenteKey"
+          v-bind="componentProps"
+        />
+      </main>
     </div>
   </section>
 </template>
 
-<script>
-import api from '@/interceptors/axiosAuth'
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import axios from 'axios'
 
-export default {
-  data() {
-    return {
-      perfil: null,
-      error: null
-    }
-  },
-  mounted() {
-    this.obtenerPerfil()
-  },
-  methods: {
-    async obtenerPerfil() {
-      try {
-        const response = await api.get('/usuarios/perfil')
-        this.perfil = response.data
-      } catch (error) {
-        this.error = error.response?.data?.message || 'Error al cargar perfil'
-      }
-    },
-    logout() {
-      localStorage.removeItem('token')
-      localStorage.removeItem('refresh_token')
-      localStorage.removeItem('rol')
-      this.$router.push('/')
-    }
+// Componentes
+import AgendarCitaForm from '@/components/paciente/AgendarCitaForm.vue'
+import CalendarCitas from '@/components/paciente/CalendarCitas.vue'
+import MisCitas from '@/components/paciente/MisCitas.vue'
+import ProfileEditCard from '@/components/paciente/ProfileEditCard.vue'
+
+// Estado principal
+const vista = ref('agendar')
+const componenteKey = ref(null)
+
+const paciente = ref(null)
+const citas = ref([])
+
+// Cargar datos
+const fetchPaciente = async () => {
+  try {
+    const res = await axios.get('/api/usuarios/perfil')
+    paciente.value = res.data
+  } catch (e) {
+    console.error('Error al cargar paciente', e)
   }
 }
+
+const fetchCitas = async () => {
+  try {
+    const res = await axios.get('/api/citas/mis-citas')
+    citas.value = res.data
+  } catch (e) {
+    console.error('Error al cargar citas', e)
+  }
+}
+
+const handleCancelarCita = async (id) => {
+  await axios.put(`/api/citas/${id}/cancelar`)
+  fetchCitas()
+}
+
+const handleEditarCita = (cita) => {
+  console.log('Editar cita:', cita)
+}
+
+// Cambiar vista y forzar clave única
+const cambiarVista = (nuevaVista) => {
+  vista.value = nuevaVista
+  componenteKey.value = `${nuevaVista}-${Date.now()}`
+}
+
+// Computar componente y props
+const componenteActual = computed(() => {
+  switch (vista.value) {
+    case 'agendar': return AgendarCitaForm
+    case 'calendario': return CalendarCitas
+    case 'historial': return MisCitas
+    case 'perfil': return ProfileEditCard
+    default: return AgendarCitaForm
+  }
+})
+
+const componentProps = computed(() => ({
+  ...(paciente.value ? { paciente: paciente.value } : {}),
+  ...(citas.value ? { citas: citas.value } : {}),
+  perfilActualizado: fetchPaciente,
+  citaAgendada: fetchCitas,
+  cancelar: handleCancelarCita,
+  editar: handleEditarCita,
+}))
+
+// Montaje inicial
+onMounted(() => {
+  fetchPaciente()
+  fetchCitas()
+  componenteKey.value = `${vista.value}-${Date.now()}`
+})
 </script>
-
-
-<style scoped>
-.paciente-background {
-  position: relative;
-  background: linear-gradient(to right, #4fc3f7, #0288d1);
-  min-height: 100vh;
-}
-
-@keyframes auroraPaciente {
-  0% {
-    background-position: 40% 60%, 60% 40%, 50% 90%;
-  }
-  50% {
-    background-position: 50% 50%, 50% 50%, 50% 80%;
-  }
-  100% {
-    background-position: 40% 60%, 60% 40%, 50% 90%;
-  }
-}
-
-.paciente-box {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 2.5rem;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: white;
-}
-
-.perfil-card {
-  max-width: 500px;
-  width: 100%;
-  padding: 2rem;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #e2e8f0;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-}
-
-.perfil-datos p {
-  margin-bottom: 0.75rem;
-  font-size: 1.1rem;
-}
-
-.perfil-datos strong {
-  color: #3a447e;
-}
-
-</style>

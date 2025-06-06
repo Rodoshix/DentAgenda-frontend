@@ -5,7 +5,6 @@ import { createPinia } from 'pinia'
 import 'bulma/css/bulma.min.css'
 import axios from 'axios'
 import 'animate.css'
-import './style.css';
 
 const app = createApp(App)
 app.use(createPinia())
