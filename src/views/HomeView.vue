@@ -84,13 +84,6 @@
         <p>📞 +56 9 1234 5678</p>
         <p>✉️ contacto@dentagenda.cl</p>
       </div>
-        <div class="footer-column">
-          <h4>Enlaces</h4>
-          <ul>
-            <li><a href="#">Inicio</a></li>
-            <li><a href="#">Agendar Cita</a></li>
-          </ul>
-        </div>
       </div>
       <div class="footer-bottom">
         <p>© 2025 DentAgenda. Todos los derechos reservados.</p>

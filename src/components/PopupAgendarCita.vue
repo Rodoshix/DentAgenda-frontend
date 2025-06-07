@@ -94,6 +94,7 @@
 
   async function verificarRut() {
     errorMensaje.value = ''
+    tipoMensaje.value = ''
     if (!rutValido(rut.value)) {
     errorMensaje.value = 'El RUT ingresado no tiene un formato válido. Ej: 12345678-9 o 1234567-K'
     return
@@ -110,6 +111,7 @@
   
         if (paciente.usuario && paciente.usuario.password) {
         mensaje.value = 'Este paciente ya tiene una cuenta registrada.'
+        tipoMensaje.value = 'cuenta-existe'
         mostrarMensaje.value = true
     } else if (paciente.nombre) {
         // registrado por recepcionista, guardamos los datos

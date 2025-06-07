@@ -8,12 +8,17 @@ const api = axios.create({
   }
 })
 
-// 👉 Inserta el access_token antes de cada request
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('token')
-  if (token) {
+
+  // 👇 Evitar agregar token en login y refresh
+  const isLogin = config.url.includes('/auth/login')
+  const isRefresh = config.url.includes('/auth/refresh')
+
+  if (token && !isLogin && !isRefresh) {
     config.headers['Authorization'] = `Bearer ${token}`
   }
+
   return config
 })
 
