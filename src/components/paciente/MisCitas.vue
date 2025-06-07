@@ -1,55 +1,122 @@
 <template>
-  <div class="box">
-    <h2 class="title is-4 mb-4">📋 Historial de Citas</h2>
+  <v-container>
+    <h2 class="text-h5 mb-4">📖 Historial de Citas</h2>
 
-    <div v-if="!citas || !citas.length" class="has-text-grey">
-      No tienes citas registradas aún.
-    </div>
+    <v-expansion-panels multiple>
+      <v-expansion-panel
+        v-for="(grupo, mes) in citasAgrupadasPorMes"
+        :key="mes"
+      >
+        <v-expansion-panel-title>
+          {{ formatearMes(mes) }} - {{ grupo.length }} cita(s)
+        </v-expansion-panel-title>
 
-    <table v-else class="table is-striped is-fullwidth">
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Hora</th>
-          <th>Odontólogo</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="cita in citas" :key="cita.id">
-          <td>{{ cita.fecha }}</td>
-          <td>{{ cita.hora }}</td>
-          <td>{{ cita.odontologoNombre }}</td>
-          <td>{{ cita.estado }}</td>
-          <td>
-            <button
-              class="button is-small is-warning mr-2"
-              @click="$emit('editar', cita)"
-              :disabled="cita.estado !== 'PENDIENTE'"
-            >
-              Editar
-            </button>
-            <button
-              class="button is-small is-danger"
-              @click="$emit('cancelar', cita.id)"
-              :disabled="cita.estado !== 'PENDIENTE'"
-            >
-              Cancelar
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+        <v-expansion-panel-text>
+          <v-table class="bg-white text-black" density="comfortable">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Odontólogo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template v-for="cita in grupo" :key="cita.id">
+                <tr @click="toggleDetalle(cita.id)" style="cursor: pointer;">
+                  <td>{{ formatFecha(cita.fechaHora) }}</td>
+                  <td>{{ formatHora(cita.fechaHora) }}</td>
+                  <td>{{ cita.odontologoNombre || 'N/A' }}</td>
+                  <td>{{ cita.estado }}</td>
+                  <td>
+                    <v-btn
+                      v-if="cita.estado === 'PENDIENTE'"
+                      color="error"
+                      size="small"
+                      @click.stop="cancelarCita(cita.id)"
+                    >
+                      Cancelar
+                    </v-btn>
+                  </td>
+                </tr>
+
+                <tr v-if="citaExpandidaId === cita.id" class="bg-grey-lighten-4">
+                  <td colspan="5" class="text-subtitle-2 pa-4">
+                    <strong>Tratamiento:</strong> {{ cita.tratamiento || 'N/A' }}<br />
+                    <strong>Observación:</strong> {{ cita.observacion || 'N/A' }}
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </v-table>
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
+  </v-container>
 </template>
 
 <script setup>
-defineProps({
-  citas: {
-    type: Array,
-    required: true,
-  },
+import { onMounted, ref, computed } from 'vue'
+import api from '../../interceptors/axiosAuth'
+
+const citas = ref([])
+
+onMounted(async () => {
+  try {
+    const response = await api.get('/citas/mis-citas')
+    citas.value = response.data
+  } catch (error) {
+    console.error('Error al cargar citas:', error)
+  }
 })
-defineEmits(['editar', 'cancelar'])
+
+const citasAgrupadasPorMes = computed(() => {
+  const agrupadas = {}
+  for (const cita of citas.value) {
+    const mes = cita.fechaHora.substring(0, 7) // "YYYY-MM"
+    if (!agrupadas[mes]) agrupadas[mes] = []
+    agrupadas[mes].push(cita)
+  }
+  return agrupadas
+})
+
+function formatFecha(fechaIso) {
+  return new Date(fechaIso).toLocaleDateString()
+}
+
+function formatHora(fechaIso) {
+  return new Date(fechaIso).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function formatearMes(iso) {
+  const fecha = new Date(iso + '-01')
+  return fecha.toLocaleString('es-CL', { month: 'long', year: 'numeric' })
+}
+
+function cancelarCita(id) {
+  if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
+    api
+      .put(`/citas/${id}/cancelar`)
+      .then(() => {
+        citas.value = citas.value.map(c =>
+          c.id === id ? { ...c, estado: 'CANCELADA' } : c
+        )
+      })
+      .catch(err => {
+        alert('Error al cancelar la cita')
+        console.error(err)
+      })
+  }
+}
+
+const citaExpandidaId = ref(null)
+
+function toggleDetalle(id) {
+  citaExpandidaId.value = citaExpandidaId.value === id ? null : id
+}
+
 </script>
