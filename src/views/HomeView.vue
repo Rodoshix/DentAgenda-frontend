@@ -5,7 +5,10 @@
           <h2>Bienvenido a DentAgenda</h2>
           <h1>Atención Odontológica de Calidad</h1>
           <p>Gestiona tus citas, consulta tu historial y recibe atención especializada.</p>
-          <button class="hero-button" @click="goToLogin">Iniciar Sesión</button>
+            <div class="button-group">
+              <button class="hero-button" @click="goToLogin">Iniciar Sesión</button>
+              <button class="hero-button" @click="mostrarPopup = true">Agendar Cita</button>
+            </div>
         </div>
         <div class="hero-image">
           <img :src="dentistaSonriente" alt="Odontóloga sonriente" />
@@ -40,12 +43,7 @@
               Nuestro equipo odontológico combina experiencia, calidez humana y tecnología moderna
               para entregarte un servicio ágil, personalizado y de calidad.
           </p>
-            <button
-            @click="scrollToContacto"
-            class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
-            >
-            Conócenos
-            </button>
+            <button @click="scrollToContacto" class="hero-button"> Conócenos </button>
         </div>
       </div>
     </section>
@@ -66,9 +64,9 @@
     <h2 class="section-title">Ubicación y Contacto</h2>
       <div class="contacto-container">
         <div class="contacto-info">
-          <p><strong>Teléfono:</strong> +56 9 1234 5678</p>
-          <p><strong>Correo:</strong> contacto@dentagenda.cl</p>
-          <p><strong>Dirección:</strong> Av. Dental 1234, Santiago, Chile</p>
+          <p><strong style="color: #000;">Teléfono:</strong> +56 9 1234 5678</p>
+          <p><strong style="color: #000;">Correo:</strong> contacto@dentagenda.cl</p>
+          <p><strong style="color: #000;">Dirección:</strong> Av. Dental 1234, Santiago, Chile</p>
           <p class="contacto-desc">Estamos ubicados en el corazón de la ciudad. ¡Ven a visitarnos o llámanos para más información!</p>
         </div>
         <div class="contacto-mapa">
@@ -91,8 +89,6 @@
           <ul>
             <li><a href="#">Inicio</a></li>
             <li><a href="#">Agendar Cita</a></li>
-            <li><a href="#">Historial</a></li>
-            <li><a href="#">Perfil</a></li>
           </ul>
         </div>
       </div>
@@ -101,11 +97,61 @@
       </div>
     </footer>
 
+    <!-- Modal Agendar Cita -->
+<transition name="fade">
+  <div v-if="mostrarPopup" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+
+      <button @click="cerrarPopup" class="absolute top-2 right-2 text-gray-400 hover:text-black">✕</button>
+
+      <h2 class="text-xl font-bold mb-4 text-center">Agendar Cita</h2>
+
+      <div v-if="etapa === 'ingreso-rut'">
+        <label class="block text-sm font-medium mb-1">Ingresa tu RUT</label>
+        <input v-model="rut" type="text" placeholder="12345678-9"
+          class="w-full px-4 py-2 border rounded-md mb-4" />
+        <button @click="verificarRut"
+          class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Continuar</button>
+      </div>
+
+      <div v-else-if="etapa === 'crear-cuenta'">
+        <p class="mb-2 text-sm">Ya estás registrado por la clínica. Crea tu contraseña:</p>
+        <input v-model="nuevaPassword" type="password" placeholder="Nueva contraseña"
+          class="w-full px-4 py-2 border rounded-md mb-4" />
+        <button @click="registrarPassword"
+          class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Registrar Contraseña</button>
+      </div>
+
+      <div v-else-if="etapa === 'registro-completo'">
+        <p class="mb-2 text-sm">Completa tu información:</p>
+        <input v-model="nombre" type="text" placeholder="Nombre completo" class="w-full mb-2 px-4 py-2 border rounded-md" />
+        <input v-model="correo" type="email" placeholder="Correo electrónico" class="w-full mb-2 px-4 py-2 border rounded-md" />
+        <input v-model="telefono" type="text" placeholder="Teléfono" class="w-full mb-2 px-4 py-2 border rounded-md" />
+        <input v-model="nuevaPassword" type="password" placeholder="Crear contraseña" class="w-full mb-4 px-4 py-2 border rounded-md" />
+        <button @click="registrarNuevoPaciente"
+          class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Registrar y Crear Cuenta</button>
+      </div>
+
+      <div v-else-if="etapa === 'ya-registrado'">
+        <p class="mb-4 text-sm">Ya tienes una cuenta registrada. Por favor inicia sesión.</p>
+        <button @click="irLogin"
+          class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Ir a Login</button>
+      </div>
+    </div>
+  </div>
+</transition>
+<div v-if="mostrarPopup" class="popup-overlay">
+  <popup-agendar-cita @cerrar="mostrarPopup = false" />
+</div>
   </template>
-  
+
   <script setup>
     import { useRouter } from 'vue-router'
+    import api from '@/interceptors/axiosAuth'
+    import PopupAgendarCita from '@/components/PopupAgendarCita.vue'
+    import { ref } from 'vue'
 
+    defineExpose();
     const router = useRouter()
     function goToLogin() {
     router.push('/login')
@@ -113,6 +159,66 @@
     //seccion 1
     const dentistaSonriente = new URL('@/assets/homeviewimg/dentistaSonriente.webp', import.meta.url).href
     
+    // Variables para el modal de agendar cita
+    
+    const mostrarPopup = ref(false)
+    const etapa = ref('ingreso-rut')
+    const rut = ref('')
+    const nuevaPassword = ref('')
+    const nombre = ref('')
+    const correo = ref('')
+    const telefono = ref('')
+
+    function cerrarPopup() {
+      mostrarPopup.value = false
+      rut.value = ''
+      etapa.value = 'ingreso-rut'
+    }
+
+    function irLogin() {
+      cerrarPopup()
+      router.push('/login')
+    }
+
+    function verificarRut() {
+      if (!rut.value) return alert('Por favor ingresa un RUT')
+
+      api.get(`/pacientes/${rut.value}`).then(res => {
+        if (res.data.usuario == null) {
+          etapa.value = 'crear-cuenta'
+        } else {
+          etapa.value = 'ya-registrado'
+        }
+      }).catch(() => {
+        etapa.value = 'registro-completo'
+      })
+    }
+
+    function registrarPassword() {
+      api.put(`/usuarios/crear-cuenta`, {
+        rut: rut.value,
+        password: nuevaPassword.value
+      }).then(() => {
+        alert('Cuenta creada correctamente.')
+        cerrarPopup()
+        router.push('/login')
+      }).catch(() => alert('Error al crear cuenta'))
+    }
+
+    function registrarNuevoPaciente() {
+      api.post(`/pacientes/registro`, {
+        rut: rut.value,
+        nombre: nombre.value,
+        correo: correo.value,
+        telefono: telefono.value,
+        password: nuevaPassword.value
+      }).then(() => {
+        alert('Paciente registrado correctamente.')
+        cerrarPopup()
+        router.push('/login')
+      }).catch(() => alert('Error al registrar paciente'))
+    }
+
     //seccion 2
     const iconoCaries = new URL('@/assets/homeviewimg/protectorCaries.webp', import.meta.url).href
     const iconoEstetoscopio = new URL('@/assets/homeviewimg/atencion.webp', import.meta.url).href
@@ -196,6 +302,14 @@
         margin-bottom: 2rem;
     }
 
+    /* Sección 1 */
+    .button-group {
+    display: flex;
+    gap: 1rem; /* Aproximadamente 1 dedo */
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    }
+
     .hero-section {
     background: linear-gradient(to right, #e0f7fa, #ffffff);
     padding: 4rem 2rem;
@@ -261,6 +375,27 @@
     border-radius: 1rem;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
+
+    /* modal agendarcita */
+    .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.3s;
+    }
+    .fade-enter-from, .fade-leave-to {
+      opacity: 0;
+    }
+
+    .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
 
     /* Sección 2 */
     .highlight-section {
