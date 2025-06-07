@@ -3,6 +3,15 @@
     <!-- HEADER -->
     <v-app-bar flat color="info" dark>
       <v-toolbar-title>🦷 DentAgenda - Panel del Paciente</v-toolbar-title>
+      <v-spacer />
+        <v-btn
+          color="white"
+          variant="text"
+          class="me-4"
+          @click="cerrarSesion"
+        >
+          Cerrar sesión
+        </v-btn>
     </v-app-bar>
 
     <!-- TABS -->
@@ -32,7 +41,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
-
+import { useRouter } from 'vue-router'
 // Componentes
 import AgendarCitaForm from '@/components/paciente/AgendarCitaForm.vue'
 import CalendarCitas from '@/components/paciente/CalendarCitas.vue'
@@ -105,6 +114,15 @@ onMounted(() => {
   fetchCitas()
   componenteKey.value = `${vista.value}-${Date.now()}`
 })
+
+const router = useRouter()
+
+function cerrarSesion() {
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('refresh_token')
+  router.push('/')
+}
+
 </script>
 
 <style scoped>
