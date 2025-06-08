@@ -28,10 +28,12 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 
 const props = defineProps({
-  citas: {
-    type: Array,
-    required: true,
-  },
+  citas: Array,
+  paciente: Object,
+  perfilActualizado: Function,
+  citaAgendada: Function,
+  cancelar: Function,
+  editar: Function,
 })
 
 const dialogVisible = ref(false)
