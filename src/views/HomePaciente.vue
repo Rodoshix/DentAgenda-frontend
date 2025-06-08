@@ -118,9 +118,10 @@ onMounted(() => {
 const router = useRouter()
 
 function cerrarSesion() {
-  localStorage.removeItem('access_token')
+  localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
-  router.push('/')
+  localStorage.removeItem('rol')
+  router.push('/login')
 }
 
 </script>
