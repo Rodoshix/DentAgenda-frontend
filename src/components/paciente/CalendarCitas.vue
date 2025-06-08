@@ -9,9 +9,9 @@
     <v-card>
       <v-card-title class="headline">🦷 Detalle de Cita</v-card-title>
       <v-card-text v-if="eventoSeleccionado">
-        <p><strong>🕒 Hora:</strong> {{ formatHora(eventoSeleccionado.start) }}</p>
-        <p><strong>👨‍⚕️ Odontólogo:</strong> {{ eventoSeleccionado.extendedProps.odontologo }}</p>
-        <p><strong>💬 Motivo:</strong> {{ eventoSeleccionado.extendedProps.motivo || 'Sin observaciones' }}</p>
+        <p><strong class = "text-black">🕒 Hora:</strong> {{ formatHora(eventoSeleccionado.start) }}</p>
+        <p><strong class = "text-black">👨‍⚕️ Odontólogo:</strong> {{ eventoSeleccionado.extendedProps.odontologo }}</p>
+        <p><strong class = "text-black">💬 Motivo:</strong> {{ eventoSeleccionado.extendedProps.motivo || 'Sin observaciones' }}</p>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
