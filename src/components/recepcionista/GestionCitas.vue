@@ -20,9 +20,11 @@
           <label class="label">Odontólogo</label>
           <div class="select is-fullwidth">
             <select v-model="filtroOdontologo">
-              <option value="">Todos</option>
-              <option v-for="od in odontologos" :key="od.id" :value="od.nombre">{{ od.nombre }}</option>
-            </select>
+            <option value="">Todos</option>
+            <option v-for="nombre in odontologos" :key="nombre" :value="nombre">
+              {{ nombre }}
+            </option>
+          </select>
           </div>
         </div>
   
@@ -61,6 +63,13 @@
       <h3 class="subtitle mt-5">🕒 Citas Pasadas</h3>
       <CitasTabla :citas="filtrarCitas(pasadas)" @cancelar="cancelarCita" @reprogramar="reprogramarCita" />
     </div>
+
+    <ReprogramarCitaModal
+      v-if="modalReprogramar"
+      :cita="citaSeleccionada"
+      @cerrar="modalReprogramar = false"
+      @cita-reprogramada="buscarCitas"
+    />
   </template>
   
   <script setup>
@@ -69,7 +78,11 @@
   import CitasTabla from './CitasTabla.vue'
   
   import RegistrarCitaModal from './RegistrarCitaModal.vue'
-    
+  import ReprogramarCitaModal from './ReprogramarCitaModal.vue'
+  
+  const modalReprogramar = ref(false)
+  const citaSeleccionada = ref(null)
+
   const mostrarModal = ref(false)
 
   const rutBusqueda = ref('')
@@ -131,6 +144,11 @@
   }
   
   const reprogramarCita = (cita) => {
-    alert(`Reprogramar cita ID ${cita.id} (en construcción)`)
+    const odontologo = odontologos.value.find(o => o.nombre === cita.odontologoNombre)
+    citaSeleccionada.value = {
+      ...cita,
+      odontologoId: odontologo?.id || null
+    }
+    modalReprogramar.value = true
   }
   </script>

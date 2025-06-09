@@ -21,11 +21,11 @@
             <td>
                 <div class="buttons" style="min-height: 2rem;">
                     <button
-                    v-if="sePuedeReprogramar(cita)"
-                    class="button is-warning is-small"
-                    @click="$emit('reprogramar', cita)"
+                      v-if="sePuedeReprogramar(cita)"
+                      class="button is-warning is-small"
+                      @click="$emit('reprogramar', { ...cita, odontologoId: cita.odontologoId || cita.odontologo?.id })"
                     >
-                    Reprogramar
+                      Reprogramar
                     </button>
                     <button
                     v-if="sePuedeCancelar(cita)"
