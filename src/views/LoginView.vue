@@ -102,6 +102,7 @@ export default {
         }
         localStorage.setItem('refresh_token', refresh_token)
         localStorage.setItem('rol', rol)
+        localStorage.setItem('rut', response.data.rut)
 
         this.error = ''
 

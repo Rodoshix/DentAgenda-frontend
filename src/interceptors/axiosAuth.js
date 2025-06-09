@@ -49,7 +49,10 @@ api.interceptors.response.use(
         const newAccessToken = response.data.access_token
         localStorage.setItem('token', newAccessToken)
 
-        // Actualiza el header y reintenta
+        // ✅ ACTUALIZA también el header por defecto de axios
+        api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`
+
+        // ✅ Y reintenta la solicitud original
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`
         return api(originalRequest)
 
@@ -67,6 +70,7 @@ function limpiarYRedirigir() {
   localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
   localStorage.removeItem('rol')
+  localStorage.removeItem('rut')
   router.push('/')
 }
 

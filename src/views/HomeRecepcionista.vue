@@ -1,40 +1,76 @@
 <template>
-    <div class="container">
-      <h1 class="title has-text-centered">Panel de Recepcionista</h1>
-        <button class="button is-light" @click="cerrarSesion">Cerrar sesión</button>
-      <div class="tabs is-centered">
-        <ul>
-          <li :class="{ 'is-active': currentTab === 'registro' }" @click="currentTab = 'registro'"><a>Registrar Paciente</a></li>
-          <li :class="{ 'is-active': currentTab === 'citas' }" @click="currentTab = 'citas'"><a>Gestión de Citas</a></li>
-          <li :class="{ 'is-active': currentTab === 'disponibilidad' }" @click="currentTab = 'disponibilidad'"><a>Disponibilidad</a></li>
-        </ul>
-      </div>
-  
-      <div v-if="currentTab === 'registro'">
-        <RegistrarPacienteForm />
-      </div>
-      <div v-else-if="currentTab === 'citas'">
-        <GestionCitas />
-      </div>
-      <div v-else-if="currentTab === 'disponibilidad'">
-        <DisponibilidadOdontologos />
-      </div>
-    </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue'
-  import RegistrarPacienteForm from '@/components/recepcionista/RegistrarPacienteForm.vue'
-  import GestionCitas from '@/components/recepcionista/GestionCitas.vue'
-  import DisponibilidadOdontologos from '@/components/recepcionista/DisponibilidadOdontologos.vue'
-  
-  const currentTab = ref('registro')
+  <v-container fluid class="pa-0">
+    <!-- HEADER -->
+    <v-app-bar flat color="info" dark>
+      <v-toolbar-title>🦷 DentAgenda - Panel de Recepcionista</v-toolbar-title>
+      <v-spacer />
+      <v-btn
+        color="white"
+        variant="text"
+        class="me-4"
+        @click="cerrarSesion"
+      >
+        Cerrar sesión
+      </v-btn>
+    </v-app-bar>
 
-  import { useRouter } from 'vue-router'
-    const router = useRouter()
+    <!-- TABS -->
+    <v-tabs
+      v-model="vista"
+      background-color="info"
+      dark
+      fixed-tabs
+    >
+      <v-tab value="registro">Registrar Paciente</v-tab>
+      <v-tab value="citas">Gestión de Citas</v-tab>
+      <v-tab value="disponibilidad">Disponibilidad</v-tab>
+    </v-tabs>
 
-    const cerrarSesion = () => {
-    localStorage.removeItem('token')
-    router.push('/login')
-    }
-  </script>
+    <!-- CONTENIDO -->
+    <v-container class="mt-4">
+      <component
+        :is="componenteActual"
+        :key="componenteKey"
+      />
+    </v-container>
+  </v-container>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+
+// Importar componentes
+import RegistrarPacienteForm from '@/components/recepcionista/RegistrarPacienteForm.vue'
+import GestionCitas from '@/components/recepcionista/GestionCitas.vue'
+import DisponibilidadOdontologos from '@/components/recepcionista/DisponibilidadOdontologos.vue'
+
+// Estado de la vista
+const vista = ref('registro')
+
+// Control de componente activo
+const componenteActual = computed(() => {
+  switch (vista.value) {
+    case 'registro':
+      return RegistrarPacienteForm
+    case 'citas':
+      return GestionCitas
+    case 'disponibilidad':
+      return DisponibilidadOdontologos
+    default:
+      return null
+  }
+})
+
+const componenteKey = computed(() => vista.value)
+
+// Cierre de sesión
+const router = useRouter()
+const cerrarSesion = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('refresh_token')
+  localStorage.removeItem('rol')
+  localStorage.removeItem('rut')
+  router.push('/login')
+}
+</script>

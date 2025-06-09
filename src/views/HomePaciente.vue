@@ -121,6 +121,7 @@ function cerrarSesion() {
   localStorage.removeItem('token')
   localStorage.removeItem('refresh_token')
   localStorage.removeItem('rol')
+  localStorage.removeItem('rut')
   router.push('/login')
 }
 
