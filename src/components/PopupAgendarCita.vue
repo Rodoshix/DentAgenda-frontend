@@ -12,7 +12,7 @@
       <!-- 🎉 Mensaje tras registro -->
       <template v-else-if="mostrarMensaje && tipoMensaje === 'registro-ok'">
         <h2 class="popup-title">¡Registro exitoso!</h2>
-        <p>Gracias por registrarte, {{ nombre.value }}.</p>
+        <p>Gracias por registrarte{{ nombre.value }}.</p>
         <button class="popup-action" @click="router.push('/login')">Iniciar sesión</button>
       </template>
     
@@ -26,6 +26,7 @@
       </template>
       <template v-else-if="mostrarFormulario">
         <h2 class="popup-title">Registro de Paciente</h2>
+        <h2 class="popup-subtitle">Debe registrarse para agendar cita</h2>
         <input type="text" class="popup-input" v-model="nombre" placeholder="Nombre completo" />
         <input type="email" class="popup-input" v-model="correo" placeholder="Correo electrónico" />
         <input type="text" class="popup-input" v-model="telefono" placeholder="Teléfono : Ej 912345678" />
@@ -110,7 +111,7 @@
         const paciente = await res.json()
   
         if (paciente.usuario && paciente.usuario.password) {
-        mensaje.value = 'Este paciente ya tiene una cuenta registrada.'
+        mensaje.value = 'Usted ya tiene una cuenta registrada, inicie sesión para continuar.' 
         tipoMensaje.value = 'cuenta-existe'
         mostrarMensaje.value = true
     } else if (paciente.nombre) {
@@ -179,7 +180,19 @@
     errorMensaje.value = 'Por favor completa todos los campos.'
     return
     }
-  
+    
+    if (!/^[0-9]{9}$/.test(telefono.value)) {
+    errorMensaje.value = 'El teléfono debe tener exactamente 9 dígitos numéricos.'
+    return
+   }
+
+   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.value)) {
+    errorMensaje.value = 'El correo electrónico no tiene un formato válido.'
+    return
+  }
+
+
+
     creando.value = true
   
     const payload = {

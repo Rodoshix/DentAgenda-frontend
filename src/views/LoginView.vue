@@ -41,7 +41,7 @@
 
             <div class="field is-flex is-justify-content-space-between">
               <label class="checkbox has-text-white">
-                <input type="checkbox" /> Recuérdame
+                <input type="checkbox" v-model="recordarRut" /> Recuérdame
               </label>
               <a class="has-text-white is-size-7">¿Olvidaste tu contraseña?</a>
             </div>
@@ -69,9 +69,19 @@ export default {
       rut: '',
       password: '',
       showPassword: false,
+      recordarRut: false,
       error: ''
     }
   },
+
+  mounted() {
+  const rutGuardado = localStorage.getItem('rutRecordado')
+  if (rutGuardado) {
+    this.rut = rutGuardado
+    this.recordarRut = true
+  }
+  },
+  
     methods: {
     togglePassword() {
       this.showPassword = !this.showPassword
@@ -85,6 +95,11 @@ export default {
 
         const { access_token, refresh_token, rol } = response.data
         localStorage.setItem('token', access_token)
+        if (this.recordarRut) {
+          localStorage.setItem('rutRecordado', this.rut)
+        } else {
+          localStorage.removeItem('rutRecordado')
+        }
         localStorage.setItem('refresh_token', refresh_token)
         localStorage.setItem('rol', rol)
 
