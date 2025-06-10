@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h2 class="title is-4 mb-4">⛔ Bloqueo de Horarios</h2>
+    <h2 class="title is-4 mb-4 text-black">⛔ Bloqueo de Horarios</h2>
 
     <!-- Fecha -->
     <v-row class="mb-4">

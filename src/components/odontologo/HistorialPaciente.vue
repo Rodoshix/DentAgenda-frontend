@@ -13,7 +13,7 @@
     <v-container class="mt-4">
       <v-card class="pa-4">
         <v-card-title>
-          📝 Historial clínico del paciente
+          📝 Historial clínico de {{ nombrePaciente }}
         </v-card-title>
         <v-divider class="mb-3" />
 
@@ -28,19 +28,30 @@
 
         <v-timeline v-else>
           <v-timeline-item
-            v-for="tratamiento in tratamientos"
-            :key="tratamiento.id"
+            v-for="t in tratamientos"
+            :key="t.id"
             dot-color="blue"
+            @click="toggleDetalles(t.id)"
+            style="cursor: pointer"
           >
-            <v-card class="mb-3" elevation="2">
+            <v-card elevation="2" class="mb-3">
               <v-card-title>
-                🗓️ {{ tratamiento.fecha }}
+                📅 {{ t.fecha }}
               </v-card-title>
-              <v-card-subtitle>Diagnóstico: {{ tratamiento.diagnostico }}</v-card-subtitle>
-              <v-card-text>
-                <strong>Tratamiento:</strong> {{ tratamiento.procedimiento }}<br />
-                <strong>Observaciones:</strong> {{ tratamiento.observacion || 'N/A' }}
-              </v-card-text>
+              <v-card-subtitle>
+                Diagnóstico: {{ t.diagnostico }}
+              </v-card-subtitle>
+
+              <v-expand-transition>
+                <div v-if="t.id === tratamientoExpandidoId" class="px-4 pb-4">
+                  <p class="text-body-1 text-black font-weight-medium">
+                    <span class="text-black font-weight-bold">Tratamiento:</span> {{ t.procedimiento }}
+                  </p>
+                  <p class="text-body-1 text-black font-weight-medium">
+                    <span class="text-black font-weight-bold">Observaciones:</span> {{ t.observacion || 'N/A' }}
+                  </p>
+                </div>
+              </v-expand-transition>
             </v-card>
           </v-timeline-item>
         </v-timeline>
@@ -58,16 +69,25 @@ const route = useRoute()
 const router = useRouter()
 
 const rutPaciente = route.params.id
+const nombrePaciente = ref('')
 const tratamientos = ref([])
+const tratamientoExpandidoId = ref(null)
 
 const volverAAgenda = () => {
   router.push('/odontologo')
+}
+
+const toggleDetalles = (id) => {
+  tratamientoExpandidoId.value = tratamientoExpandidoId.value === id ? null : id
 }
 
 const cargarHistorial = async () => {
   try {
     const response = await api.get(`tratamientos/paciente/${rutPaciente}`)
     tratamientos.value = response.data
+    if (response.data.length > 0) {
+      nombrePaciente.value = response.data[0].pacienteNombre || 'Paciente'
+    }
   } catch (err) {
     tratamientos.value = []
   }

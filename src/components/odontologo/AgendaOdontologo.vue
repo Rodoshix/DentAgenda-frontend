@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="title is-4 mb-4">📅 Mi Agenda</h2>
+    <h2 class="title is-4 mb-4 text-black">📅 Mi Agenda</h2>
 
     <!-- Selector de fecha -->
     <v-row class="mb-4">
@@ -9,7 +9,9 @@
           v-model="fechaSeleccionada"
           label="Selecciona una fecha"
           type="date"
+          :min="minFecha"
           @change="consultarCitas"
+          hide-details
         />
       </v-col>
     </v-row>
@@ -70,16 +72,21 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import api from '../../interceptors/axiosAuth'
 import RegistrarTratamiento from '@/components/odontologo/RegistrarTratamiento.vue'
 
+// Variables
 const mostrarModal = ref(false)
 const citaSeleccionada = ref(null)
-
-const fechaSeleccionada = ref(new Date().toISOString().substring(0, 10))
 const citas = ref([])
 
+// Fecha mínima: hoy
+const hoy = new Date().toISOString().split('T')[0]
+const fechaSeleccionada = ref(hoy)
+const minFecha = hoy
+
+// Consultar citas del odontólogo
 const consultarCitas = async () => {
   try {
     const response = await api.get('/citas/odontologo', {
@@ -92,9 +99,9 @@ const consultarCitas = async () => {
   }
 }
 
-onMounted(() => {
-  consultarCitas()
-})
+// Refrescar agenda al montar y cuando cambia la fecha
+onMounted(consultarCitas)
+watch(fechaSeleccionada, consultarCitas)
 
 const abrirModal = (cita) => {
   citaSeleccionada.value = cita
@@ -104,6 +111,6 @@ const abrirModal = (cita) => {
 const cerrarModal = () => {
   mostrarModal.value = false
   citaSeleccionada.value = null
-  consultarCitas() // Refrescar para que ya no aparezca el botón si se registró
+  consultarCitas()
 }
 </script>
