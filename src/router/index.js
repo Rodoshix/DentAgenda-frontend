@@ -4,6 +4,7 @@ import HomePaciente from '@/views/HomePaciente.vue'
 import HomeView from '@/views/HomeView.vue'
 import HomeRecepcionista from '@/views/HomeRecepcionista.vue'
 import HomeOdontologo from '@/views/HomeOdontologo.vue' 
+import HistorialPaciente from '@/components/odontologo/HistorialPaciente.vue'
 // Agrega otras vistas según roles
 
 const routes = [
@@ -12,6 +13,7 @@ const routes = [
   { path: '/paciente', component: HomePaciente },
   { path: '/recepcionista', component: HomeRecepcionista },
   { path: '/odontologo', component: HomeOdontologo },
+  { path: '/odontologo/historial/:id', component: HistorialPaciente },
   // Agrega más rutas para recepcionista, odontólogo, admin
 ]
 
