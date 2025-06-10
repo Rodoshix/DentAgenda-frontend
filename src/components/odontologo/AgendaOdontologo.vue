@@ -34,14 +34,15 @@
       </v-card-title>
 
       <v-card-subtitle>
-        Motivo: {{ cita.motivo }}
+        Motivo: {{ cita.motivo }}<br />
+        Estado: {{ cita.estado }}
       </v-card-subtitle>
 
       <v-card-actions>
         <v-btn
           size="small"
           color="info"
-          @click="$router.push(`/odontologo/historial/${cita.pacienteId}`)"
+          @click="$router.push(`/odontologo/historial/${cita.pacienteRut}`)"
         >
           Ver historial
         </v-btn>
@@ -49,7 +50,7 @@
         <v-btn
           size="small"
           color="success"
-          v-if="['CONFIRMADA', 'ATENDIDA'].includes(cita.estado)"
+          v-if="['CONFIRMADA', 'ATENDIDA'].includes(cita.estado) && !cita.tratamientoRegistrado"
           @click="abrirModal(cita)"
         >
           Registrar tratamiento
@@ -103,5 +104,6 @@ const abrirModal = (cita) => {
 const cerrarModal = () => {
   mostrarModal.value = false
   citaSeleccionada.value = null
+  consultarCitas() // Refrescar para que ya no aparezca el botón si se registró
 }
 </script>
